@@ -1,9 +1,14 @@
-data "github_repository" "this" {
-  for_each = toset(setunion(
-    flatten([for k, config in var.variables : config.repositories if length(config.repositories) > 0]),
-    flatten([for k, config in var.secrets : config.repositories if length(config.repositories) > 0]),
-    flatten([for k, config in var.dependabot_secrets : config.repositories if length(config.repositories) > 0]),
-    flatten([for k, config in var.rulesets : [for r in config.required_workflows : regex("^([^/]+)", r) if length(config.required_workflows) > 0]])
-  ))
-  name = each.key
+data "github_repositories" "this" {
+  query           = "org:${var.organization}"
+  include_repo_id = true
+}
+
+# teams
+data "github_organization" "this" {
+  name = var.organization
+}
+
+# teams
+data "github_organization_teams" "this" {
+  summary_only = true
 }

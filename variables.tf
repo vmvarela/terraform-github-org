@@ -1,3 +1,15 @@
+variable "organization" {
+  description = "(Required) Org name."
+  type        = string
+  default     = false
+}
+
+variable "enterprise" {
+  description = "(Optional) True if the organization is associated with an enterprise account."
+  type        = bool
+  default     = false
+}
+
 variable "billing_email" {
   description = "(Required) Billing email address. This address is not publicized."
   type        = string
@@ -121,15 +133,45 @@ variable "blog" {
   default     = null
 }
 
-variable "members" {
-  description = "(Optional) allows you to add/remove users from your organization. When applied, an invitation will be sent to the user to become part of the organization. When destroyed, either the invitation will be cancelled or the user will be removed."
-  type        = map(string)
+variable "enable_advanced_security" {
+  description = "(Optional) Use to enable or disable GitHub Advanced Security for new repositories."
+  type        = bool
   default     = null
-  validation {
-    condition     = alltrue([for username, role in(var.members == null ? {} : var.members) : contains(["member", "admin"], role)])
-    error_message = "Possible values for member role are `member` or `admin`"
-  }
 }
+
+variable "enable_secret_scanning" {
+  description = "(Optional) Use to enable or disable secret scanning for new repositories."
+  type        = bool
+  default     = null
+}
+
+variable "enable_secret_scanning_push_protection" {
+  description = "(Optional) Use to enable or disable secret scanning push protection for new repositories. If set to `true`, the repository's visibility must be `public` or `enable_advanced_security` must also be `true`."
+  type        = bool
+  default     = null
+}
+
+variable "enable_vulnerability_alerts" {
+  description = "(Optional) Either `true` to enable vulnerability alerts, or `false` to disable vulnerability alerts for new repositories."
+  type        = bool
+  default     = null
+}
+
+variable "enable_dependabot_security_updates" {
+  description = "(Optional) Set to `true` to enable the automated security fixes for new repositories."
+  type        = bool
+  default     = null
+}
+
+# variable "members" {
+#   description = "(Optional) allows you to add/remove users from your organization. When applied, an invitation will be sent to the user to become part of the organization. When destroyed, either the invitation will be cancelled or the user will be removed."
+#   type        = map(string)
+#   default     = null
+#   validation {
+#     condition     = alltrue([for username, role in(var.members == null ? {} : var.members) : contains(["member", "admin"], role)])
+#     error_message = "Possible values for member role are `member` or `admin`"
+#   }
+# }
 
 variable "blocked" {
   description = "(Optional) allows you to create and manage blocks for GitHub organizations."
@@ -199,41 +241,69 @@ variable "dependabot_secrets" {
 variable "rulesets" {
   description = "(Optional) Organization rules"
   type = map(object({
-    enforcement                          = optional(string, "active")
-    target                               = optional(string, "branch")
-    include                              = optional(set(string), [])
-    exclude                              = optional(set(string), [])
-    repositories_include                 = optional(set(string), [])
-    repositories_exclude                 = optional(set(string), [])
-    bypass_mode                          = optional(string, "always")
-    bypass_organization_admin            = optional(bool)
-    bypass_roles                         = optional(set(string))
-    bypass_teams                         = optional(set(string))
-    bypass_integration                   = optional(set(string))
-    regex_branch_name                    = optional(string)
-    regex_tag_name                       = optional(string)
-    regex_commit_author_email            = optional(string)
-    regex_committer_email                = optional(string)
-    regex_commit_message                 = optional(string)
-    forbidden_creation                   = optional(bool)
-    forbidden_deletion                   = optional(bool)
-    forbidden_update                     = optional(bool)
-    forbidden_fast_forward               = optional(bool)
-    dismiss_pr_stale_reviews_on_push     = optional(bool)
-    required_pr_code_owner_review        = optional(bool)
-    required_pr_last_push_approval       = optional(bool)
-    required_pr_approving_review_count   = optional(number)
-    required_pr_review_thread_resolution = optional(bool)
-    required_workflows                   = optional(set(string), [])
-    required_linear_history              = optional(bool)
-    required_signatures                  = optional(bool)
-    required_checks                      = optional(set(string))
-    required_code_scanning = optional(map(object({ # index is name of tool
-      alerts_threshold          = optional(string)
-      security_alerts_threshold = optional(string)
+    enforcement = optional(string, "active")
+    rules = optional(object({
+      branch_name_pattern = optional(object({
+        operator = optional(string)
+        pattern  = optional(string)
+        name     = optional(string)
+        negate   = optional(bool)
+      }))
+      commit_author_email_pattern = optional(object({
+        operator = optional(string)
+        pattern  = optional(string)
+        name     = optional(string)
+        negate   = optional(bool)
+      }))
+      commit_message_pattern = optional(object({
+        operator = optional(string)
+        pattern  = optional(string)
+        name     = optional(string)
+        negate   = optional(bool)
+      }))
+      committer_email_pattern = optional(object({
+        operator = optional(string)
+        pattern  = optional(string)
+        name     = optional(string)
+        negate   = optional(bool)
+      }))
+      creation         = optional(bool)
+      deletion         = optional(bool)
+      non_fast_forward = optional(bool)
+      pull_request = optional(object({
+        dismiss_stale_reviews_on_push     = optional(bool)
+        require_code_owner_review         = optional(bool)
+        require_last_push_approval        = optional(bool)
+        required_approving_review_count   = optional(number)
+        required_review_thread_resolution = optional(bool)
+      }))
+      required_workflows = optional(list(object({
+        repository = string
+        path       = string
+        ref        = optional(string)
+      })))
+      required_linear_history              = optional(bool)
+      required_signatures                  = optional(bool)
+      required_status_checks               = optional(map(string))
+      strict_required_status_checks_policy = optional(bool)
+      tag_name_pattern = optional(object({
+        operator = optional(string)
+        pattern  = optional(string)
+        name     = optional(string)
+        negate   = optional(bool)
+      }))
+      update = optional(bool)
+    }))
+    target = optional(string, "branch")
+    bypass_actors = optional(map(object({
+      actor_type  = string
+      bypass_mode = string
     })))
+    include      = optional(list(string), [])
+    exclude      = optional(list(string), [])
+    repositories = optional(list(string))
   }))
-  default = null
+  default = {}
   validation {
     condition     = alltrue([for name, config in(var.rulesets == null ? {} : var.rulesets) : contains(["active", "evaluate", "disabled"], config.enforcement)])
     error_message = "Possible values for enforcement are active, evaluate or disabled."
@@ -242,8 +312,33 @@ variable "rulesets" {
     condition     = alltrue([for name, config in(var.rulesets == null ? {} : var.rulesets) : contains(["tag", "branch"], config.target)])
     error_message = "Possible values for ruleset target are tag or branch"
   }
+}
+
+variable "custom_roles" {
+  description = "(Optional) The list of custom roles of the organization (key: role_name)"
+  type = map(object({
+    description = optional(string)
+    base_role   = string
+    permissions = set(string)
+  }))
+  default = null
   validation {
-    condition     = alltrue([for name, config in(var.rulesets == null ? {} : var.rulesets) : contains(["always", "pull_request"], config.bypass_mode)])
-    error_message = "Possible values for ruleset bypass_mode are always or pull_request"
+    condition     = alltrue([for role, config in(var.custom_roles == null ? {} : var.custom_roles) : contains(["read", "triage", "write", "maintain"], config.base_role)])
+    error_message = "Possible values for base_role are read, triage, write or maintain."
+  }
+}
+
+variable "runner_groups" {
+  description = "(Optional) The list of runner groups of the organization (key: runner_group_name)"
+  type = map(object({
+    visibility                = optional(string, null)
+    workflows                 = optional(set(string))
+    repositories              = optional(set(string), [])
+    allow_public_repositories = optional(bool)
+  }))
+  default = {}
+  validation {
+    condition     = alltrue([for rg, config in(var.runner_groups == null ? {} : var.runner_groups) : contains(["all", "private", "selected"], config.visibility)])
+    error_message = "Possible values for visibility are `all`, `private` or `selected`."
   }
 }

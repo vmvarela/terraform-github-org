@@ -15,10 +15,6 @@ module "org" {
   members_can_create_public_repositories  = false
   members_can_create_repositories         = false
 
-  members = {
-    vmvarela = "admin"
-  }
-
   blocked = [
     "vmvarela-clb_prisa"
   ]
@@ -65,6 +61,13 @@ module "org" {
       ]
       forbidden_deletion = true
     }
+  }
 
+  custom_roles = {
+    "myrole" = {
+      description = "My custom role"
+      base_role   = "write"
+      permissions = ["remove_assignee"]
+    }
   }
 }

@@ -32,7 +32,9 @@ No inputs.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_used"></a> [used](#output\_used) | Recovered repository IDs |
+| <a name="output_members_count"></a> [members\_count](#output\_members\_count) | Number of members |
+| <a name="output_repositories_count"></a> [repositories\_count](#output\_repositories\_count) | Number of repositories |
+| <a name="output_teams_count"></a> [teams\_count](#output\_teams\_count) | Number of teams |
 <!-- END_TF_DOCS -->
 
 ## Authors
