@@ -196,7 +196,6 @@ variable "dependabot_secrets" {
   }
 }
 
-/*
 variable "rulesets" {
   description = "(Optional) Organization rules"
   type = map(object({
@@ -248,4 +247,3 @@ variable "rulesets" {
     error_message = "Possible values for ruleset bypass_mode are always or pull_request"
   }
 }
-*/
