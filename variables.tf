@@ -342,3 +342,21 @@ variable "runner_groups" {
     error_message = "Possible values for visibility are `all`, `private` or `selected`."
   }
 }
+
+variable "defaults" {
+  description = "(Optional) Repositories default configuration (if empty)"
+  type        = any
+  default     = {}
+}
+
+variable "repositories" {
+  description = "(Optional) Repositories"
+  type        = any
+  default     = {}
+}
+
+variable "settings" {
+  description = "(Optional) Repositories fixed common configuration (cannot be overwritten)"
+  type        = any
+  default     = {}
+}

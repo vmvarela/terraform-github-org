@@ -1,5 +1,6 @@
 module "org" {
   source                                  = "../.."
+  organization                            = "vmvarela-org-testing"
   name                                    = "Testing"
   company                                 = "Testing Corp."
   email                                   = "vmvarela@gmail.com"
@@ -69,5 +70,19 @@ module "org" {
       base_role   = "write"
       permissions = ["remove_assignee"]
     }
+  }
+
+  settings = {
+    topics = ["settings-topic"]
+  }
+
+  repositories = {
+    "org-repo-1" = {}
+    "org-repo-2" = {}
+    "org-repo-3" = {}
+  }
+
+  defaults = {
+    topics = ["default-topic"]
   }
 }
