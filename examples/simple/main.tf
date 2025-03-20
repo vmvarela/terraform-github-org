@@ -77,12 +77,15 @@ module "org" {
   }
 
   repositories = {
-    "org-repo-1" = {}
-    "org-repo-2" = {}
-    "org-repo-3" = {}
+    "test-org-simple-1" = {
+      topics = ["repo-1-topic"]
+    }
+    "test-org-simple-2" = {}
+    "test-org-simple-3" = {}
   }
 
   defaults = {
-    topics = ["default-topic"]
+    topics   = ["default-topic"]
+    template = "vmvarela/template"
   }
 }

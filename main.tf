@@ -8,7 +8,7 @@ resource "github_actions_organization_secret" "this" {
   encrypted_value = each.value.encrypted_value
   visibility      = each.value.visibility
   selected_repository_ids = each.value.visibility == "selected" ? [for r in each.value.repositories :
-    local.repository_id[r]
+    try(local.repository_id[r], r)
   ] : null
   lifecycle {
     ignore_changes = [
@@ -25,7 +25,7 @@ resource "github_actions_organization_variable" "this" {
   value         = each.value.value
   visibility    = each.value.visibility
   selected_repository_ids = each.value.visibility == "selected" ? [for r in each.value.repositories :
-    local.repository_id[r]
+    try(local.repository_id[r], r)
   ] : null
 }
 
@@ -35,7 +35,7 @@ resource "github_actions_runner_group" "this" {
   name       = each.key
   visibility = each.value.visibility
   selected_repository_ids = each.value.visibility == "selected" ? [for r in each.value.repositories :
-    local.repository_id[r]
+    try(local.repository_id[r], r)
   ] : null
   restricted_to_workflows = try(each.value.workflows, null) != null
   selected_workflows      = try(each.value.workflows, null)
@@ -49,7 +49,7 @@ resource "github_dependabot_organization_secret" "this" {
   encrypted_value = each.value.encrypted_value
   visibility      = each.value.visibility
   selected_repository_ids = each.value.visibility == "selected" ? [for r in each.value.repositories :
-    local.repository_id[r]
+    try(local.repository_id[r], r)
   ] : null
   lifecycle {
     ignore_changes = [
@@ -159,8 +159,7 @@ resource "github_organization_ruleset" "this" {
         dynamic "required_workflow" {
           for_each = each.value.rules.required_workflows != null ? each.value.rules.required_workflows : []
           content {
-            # repository_id = element(data.github_repositories.this.repo_ids, index(data.github_repositories.this.names, required_workflow.value.repository))
-            repository_id = local.repository_id[required_workflow.value.repository]
+            repository_id = try(local.repository_id[required_workflow.value.repository], required_workflow.value.repository)
             path          = required_workflow.value.path
             ref           = required_workflow.value.ref
           }
