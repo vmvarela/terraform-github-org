@@ -1,7 +1,7 @@
 variable "organization" {
   description = "(Required) Org name."
   type        = string
-  default     = false
+  default     = null
 }
 
 variable "enterprise" {
