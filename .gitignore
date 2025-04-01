@@ -40,3 +40,8 @@ terraform.rc
 # Ignore example keys_pem folder
 keys_pem
 corp
+
+.DS_Store
+
+# Ignore direnv file
+.envrc

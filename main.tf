@@ -1,21 +1,25 @@
 # actions_organization_permissions
 
-# actions_organization_secrets
-resource "github_actions_organization_secret" "this" {
-  for_each        = var.secrets != null ? var.secrets : {}
+# actions_organization_secrets (plaintext)
+resource "github_actions_organization_secret" "plaintext" {
+  for_each        = var.secrets
   secret_name     = each.key
-  plaintext_value = each.value.plaintext_value
-  encrypted_value = each.value.encrypted_value
+  plaintext_value = each.value.value
   visibility      = each.value.visibility
   selected_repository_ids = each.value.visibility == "selected" ? [for r in each.value.repositories :
     try(local.repository_id[r], r)
   ] : null
-  lifecycle {
-    ignore_changes = [
-      plaintext_value,
-      encrypted_value
-    ]
-  }
+}
+
+# actions_organization_secrets (encrypted)
+resource "github_actions_organization_secret" "encrypted" {
+  for_each        = var.secrets_encrypted
+  secret_name     = each.key
+  encrypted_value = each.value.value
+  visibility      = each.value.visibility
+  selected_repository_ids = each.value.visibility == "selected" ? [for r in each.value.repositories :
+    try(local.repository_id[r], r)
+  ] : null
 }
 
 # actions_organization_variable
@@ -41,22 +45,26 @@ resource "github_actions_runner_group" "this" {
   selected_workflows      = try(each.value.workflows, null)
 }
 
-# dependabot_organization_secret
-resource "github_dependabot_organization_secret" "this" {
-  for_each        = var.dependabot_secrets != null ? var.dependabot_secrets : {}
+# dependabot_organization_secret (plaintext)
+resource "github_dependabot_organization_secret" "plaintext" {
+  for_each        = var.dependabot_secrets != null ? var.dependabot_secrets : (var.dependabot_copy_secrets ? var.secrets : null)
   secret_name     = each.key
-  plaintext_value = each.value.plaintext_value
-  encrypted_value = each.value.encrypted_value
+  plaintext_value = each.value.value
   visibility      = each.value.visibility
   selected_repository_ids = each.value.visibility == "selected" ? [for r in each.value.repositories :
     try(local.repository_id[r], r)
   ] : null
-  lifecycle {
-    ignore_changes = [
-      plaintext_value,
-      encrypted_value
-    ]
-  }
+}
+
+# dependabot_organization_secret (encrypted)
+resource "github_dependabot_organization_secret" "encrypted" {
+  for_each        = var.dependabot_secrets_encrypted != null ? var.dependabot_secrets_encrypted : (var.dependabot_copy_secrets ? var.secrets_encrypted : null)
+  secret_name     = each.key
+  encrypted_value = each.value.value
+  visibility      = each.value.visibility
+  selected_repository_ids = each.value.visibility == "selected" ? [for r in each.value.repositories :
+    try(local.repository_id[r], r)
+  ] : null
 }
 
 # organization_block
@@ -359,19 +367,6 @@ resource "github_organization_settings" "this" {
   dependabot_alerts_enabled_for_new_repositories               = var.enable_vulnerability_alerts
   dependabot_security_updates_enabled_for_new_repositories     = var.enable_dependabot_security_updates
   dependency_graph_enabled_for_new_repositories                = var.enable_vulnerability_alerts
-}
-
-# organization_webhook
-resource "github_organization_webhook" "this" {
-  for_each = var.webhooks != null ? var.webhooks : {}
-  active   = true
-  configuration {
-    url          = each.key
-    content_type = each.value.content_type
-    insecure_ssl = each.value.insecure_ssl
-    secret       = each.value.secret
-  }
-  events = each.value.events
 }
 
 # team

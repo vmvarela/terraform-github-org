@@ -8,6 +8,7 @@ module "org" {
   billing_email                           = "vmvarela@gmail.com"
   location                                = "Spain"
   default_repository_permission           = "none"
+  has_organization_projects               = false
   has_repository_projects                 = false
   members_can_create_pages                = false
   members_can_create_private_pages        = false
@@ -20,12 +21,13 @@ module "org" {
     "vmvarela-clb_prisa"
   ]
 
-  webhooks = {
-    "https://www.mycompany.com/webhook" = {
+  webhooks = [
+    {
+      url          = "https://www.mycompany.com/webhook"
       content_type = "json"
       events       = ["issues"]
     }
-  }
+  ]
 
   variables = {
     "VAR" = {
@@ -73,7 +75,7 @@ module "org" {
   }
 
   settings = {
-    topics = ["settings-topic"]
+    topics = ["terraform-test"]
   }
 
   repositories = {
